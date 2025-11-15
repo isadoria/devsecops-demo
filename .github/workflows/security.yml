@@ -1,0 +1,37 @@
+yaml
+name: DevSecOps Security Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  security:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout do código
+      uses: actions/checkout@v3
+
+    - name: Instalar Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+
+    - name: Instalar dependências
+      run: |
+        pip install -r requirements.txt || true
+
+    # SAST - Código inseguro
+    - name: Rodar Bandit (SAST)
+      run: |
+        pip install bandit
+        bandit -r . || exit 1
+
+    # SCA - Falhas em dependências
+    - name: Rodar Safety (SCA)
+      run: |
+        pip install safety
+        safety check || exit 1
